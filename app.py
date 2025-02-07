@@ -1,21 +1,36 @@
 from flask import Flask, request, jsonify
 import time
+import subprocess
+import os
+import chromedriver_autoinstaller
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException
 
 app = Flask(__name__)
 
+def install_chromium():
+    """Install Chromium in headless environments like Render."""
+    # Install Chromium
+    subprocess.run(['apt-get', 'update'])
+    subprocess.run(['apt-get', 'install', '-y', 'chromium'])
+
+    # Install ChromeDriver (matching the Chromium version)
+    chromedriver_autoinstaller.install()
+
 def initialize_driver():
-    """Initialize Selenium Chrome WebDriver for Render deployment"""
+    """Initialize Selenium Chrome WebDriver with necessary configurations"""
+    
+    # Install Chromium and ChromeDriver if not installed
+    if not os.path.exists("/usr/bin/chromium"):
+        install_chromium()
+
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run in headless mode
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-
-    # Set the path for the Chrome binary (Chromium in Render's environment)
-    options.binary_location = '/usr/bin/chromium'
+    options.binary_location = "/usr/bin/chromium"  # Set binary location for Chromium
 
     return webdriver.Chrome(options=options)
 
@@ -73,4 +88,4 @@ def get_comments():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=10000)
+    app.run(debug=True, host="0.0.0.0", port=10000)  # Corrected port
