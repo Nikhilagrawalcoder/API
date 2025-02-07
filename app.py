@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 import time
-import chromedriver_autoinstaller
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException
@@ -8,14 +7,15 @@ from selenium.common.exceptions import WebDriverException
 app = Flask(__name__)
 
 def initialize_driver():
-    """Initialize Selenium Chrome WebDriver"""
-    chromedriver_autoinstaller.install()  # Auto-install ChromeDriver if not found
-
+    """Initialize Selenium Chrome WebDriver for Render deployment"""
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run in headless mode
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+
+    # Set the path for the Chrome binary (Chromium in Render's environment)
+    options.binary_location = '/usr/bin/chromium'
 
     return webdriver.Chrome(options=options)
 
